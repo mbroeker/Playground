@@ -8,6 +8,11 @@
 #include <usart.h>
 #include <ctype.h>
 
+// Local Prototypes
+static void USART_Transmit_Character(unsigned char c);
+static unsigned char USART_Receive_Character(void);
+static int USART_WriteLine(char *s);
+
 /************************************************************************/
 /* SETUP USART | 38400 max for rx and tx | 8N1                          */
 /************************************************************************/
@@ -26,6 +31,55 @@ void USART_Init(unsigned int ubrr)
 	| (0<<USBS0)                     // 1
 	;
 }
+
+/************************************************************************/
+/* Printf for Serial Console                                            */
+/************************************************************************/
+int USART_Printf(const char *format, ...)
+{
+	char buffer[BUF_SIZE];
+	
+	va_list args;
+	va_start(args, format);
+	vsnprintf(buffer, BUF_SIZE, format, args);
+	va_end(args);
+	
+	return USART_WriteLine(buffer);
+}
+
+/************************************************************************/
+/* Readline for Serial Console                                          */
+/************************************************************************/
+int USART_ReadLine(char *buffer, int bufSize)
+{
+	int i = 0;
+	unsigned char c = '\0';
+	while (c != '\n' && i < bufSize - 1) {
+		c = USART_Receive_Character();
+		if (isascii(c)) {
+			buffer[i++] = c;
+		}
+	}
+	
+	buffer[i] = '\0';
+	
+	return i;
+}
+
+/************************************************************************/
+/* ReadBytes for Serial Console                                         */
+/************************************************************************/
+int USART_ReadBytes(char *buffer, int bufSize)
+{
+	int i = 0;	
+	while (i < bufSize) {		
+		buffer[i++] = USART_Receive_Character();
+	}
+	
+	return i;
+}
+
+/* LOW LEVEL AREA - DO NOT TOUCH */
 
 /************************************************************************/
 /* Send a Single Character                                              */
@@ -64,38 +118,4 @@ static int USART_WriteLine(char *s)
 	}
 	
 	return len;
-}
-
-/************************************************************************/
-/* Printf for Serial Console                                            */
-/************************************************************************/
-int SerialPrintf (const char *format, ...)
-{
-	char buffer[BUF_SIZE];
-	
-	va_list args;
-	va_start(args, format);
-	vsnprintf(buffer, BUF_SIZE, format, args);
-	va_end(args);
-	
-	return USART_WriteLine(buffer);
-}
-
-/************************************************************************/
-/* GetString for Serial Console                                         */
-/************************************************************************/
-int SerialGetString (char *buffer, int bufSize)
-{
-	int i = 0;
-	unsigned char c = '\0';
-	while (c != '\n' && i < bufSize - 1) {
-		c = USART_Receive_Character();
-		if (isascii(c)) {
-			buffer[i++] = c;
-		}
-	}
-	
-	buffer[i] = '\0';
-	
-	return i;
 }

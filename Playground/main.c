@@ -69,7 +69,7 @@ ISR (TIMER0_COMPA_vect)
 		iteration++;
 		
 		if ((iteration % 20) == 0) {
-			SerialPrintf("ROUND %d\n", iteration);
+			USART_Printf("ROUND %d\n", iteration);
 		}
 		
 		// Toggle PIN for Hantek 6022BE
@@ -112,14 +112,14 @@ int main(void)
 	
 	char buffer[BUF_SIZE];
 
-	SerialPrintf("LISTENING ON SERIAL CONSOLE WITH 38400 Bd|8|N|1\n");
+	USART_Printf("LISTENING ON SERIAL CONSOLE WITH 38400 Bd|8|N|1\n");
 	
 	int len = 0;
 	while (1) {
-		len = SerialGetString((char*)&buffer, BUF_SIZE);
+		len = USART_ReadLine((char*)&buffer, BUF_SIZE);
 		
 		if (len > 0) {
-			SerialPrintf("RECEIVED: %s", buffer);
+			USART_Printf("RECEIVED: %s", buffer);
 			*buffer = 0;
 		}
 	}

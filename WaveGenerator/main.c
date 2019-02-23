@@ -27,7 +27,7 @@ int main(void)
 	// DIGITAL LED ON PB5 as INPUT
 	Set_Bit(DDRB, 5);
 	
-	SerialPrintf("WAVE GENERATOR READY\n");
+	USART_Printf("WAVE GENERATOR READY\n");
 
 	while (1)
 	{

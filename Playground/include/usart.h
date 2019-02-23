@@ -30,7 +30,8 @@
 #include <util/delay.h>
 
 void USART_Init(unsigned int);
-int SerialPrintf(const char *format, ...);
-int SerialGetString (char *buffer, int bufSize);
+int USART_Printf(const char *format, ...);
+int USART_ReadLine(char *buffer, int bufSize);
+int USART_ReadBytes(char *buffer, int bufSize);
 
 #endif /* USART_H_ */
