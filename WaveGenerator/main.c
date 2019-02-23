@@ -1,5 +1,5 @@
 /*
-* WaveGenerator
+* Wave Generator for
 *	Arduino UNO R3 (ATmega328P) with Atmel Studio 7.0
 *   USB ISP-Programmer for ATMEL(Tremex, STK500)
 *	Hantek 6022BE Oscilloscope
@@ -12,105 +12,39 @@
 */
 
 #include <usart.h>
+#include <cdc_device.h>
 #include <tools.h>
-
-#include <avr/io.h>
-#include <avr/interrupt.h>
-
-#define TIMEOUT 120
+#include <sinus_wave.h>
 
 /************************************************************************/
-/* Timer0 | NO PWM_POSSIBLE                                             */
-/************************************************************************/
-void Counter_TimSK0_Init()
-{
-	// Prescaler F_CPU / 256 = 64k	for Timer 0
-	TCCR0A = 0;
-	TCCR0A |= (1 << WGM01);
-	
-	TCCR0B = 0;
-	TCCR0B |= (1 << CS02);
-	
-	// Counter from 0 - 255
-	OCR0A = 0xff;
-	
-	// Enable Overflow Capture Interrupt on TIM0
-	TIMSK0 |= (1 << OCIE0A);
-}
-
-/************************************************************************/
-/* Timer1 | PWM_POSSIBLE                                                */
-/************************************************************************/
-void Counter_TimSK1_Init()
-{
-	// Prescaler F_CPU / 256 = 64k	for Timer 1
-	TCCR1A = 0;
-	TCCR1A |= (1 << WGM11);
-	
-	TCCR1B = 0;
-	TCCR1B |= (1 << CS12);
-	
-	// Counter from 0 - 128
-	OCR1A = 128;
-	
-	// Enable Overflow Capture Interrupt on TIM1
-	TIMSK1 |= (1 << OCIE1A);
-}
-
-/************************************************************************/
-/*                                                                      */
-/************************************************************************/
-ISR (TIMER0_COMPA_vect)
-{
-	static int counter = 0;
-	static int iteration = 0;
-	
-	if (counter > TIMEOUT) {
-		iteration++;
-		
-		if ((iteration % 20) == 0) {
-			SerialPrintf("ROUND %d\n", iteration);			
-		}
-		
-		// Toggle PIN for Hantek 6022BE
-		Toggle_Bit(PORTB, 5);
-		
-		counter = 0;
-	}
-	
-	counter++;
-}
-
-/************************************************************************/
-/*                                                                      */
-/************************************************************************/
-ISR (TIMER1_COMPA_vect)
-{
-	static int counter = 0;
-	
-	if (counter > TIMEOUT) {
-		counter = 0;
-	}
-	
-	counter++;
-}
-
-/************************************************************************/
-/*                                                                      */
+/* Main Module                                                          */
 /************************************************************************/
 int main(void)
 {
+	// Initialize USART(38400|8|N|1)
 	USART_Init(FREQ);
 	
-	// Init GPIO LED
-	Set_Bit(DDRB, DDB5);
+	// DIGITAL LED ON PB5 as INPUT
+	Set_Bit(DDRB, 5);
 	
-	cli();
-	Counter_TimSK0_Init();
-	Counter_TimSK1_Init();
-	sei();
-	
-	while (1) {
+	SerialPrintf("WAVE GENERATOR READY\n");
+
+	while (1)
+	{
+		// Generate a Sinus Wave
+		for (uint8_t x = 0; x < 255; x++) {
+			uint8_t value = sinusWave(x);
+			
+			if (value > 128) {
+				Set_Bit(PORTB, DDB5);
+				} else {
+				Toggle_Bit(PORTB, DDB5);
+			}
+			
+			_delay_us(10);
+		}
+		
+		_delay_ms(10);
 	}
 
 	return EXIT_SUCCESS;

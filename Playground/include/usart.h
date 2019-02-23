@@ -13,7 +13,7 @@
 #endif
 
 #ifndef BAUD
-#define BAUD 115200
+#define BAUD 38400
 #endif
 
 #define FREQ F_CPU/16/BAUD
@@ -31,6 +31,6 @@
 
 void USART_Init(unsigned int);
 int SerialPrintf(const char *format, ...);
-char *SerialGetString ();
+int SerialGetString (char *buffer, int bufSize);
 
 #endif /* USART_H_ */
